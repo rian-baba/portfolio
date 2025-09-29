@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-100;
+  }
+  ::selection {
+    @apply bg-primary-400/40 text-slate-900;
+  }
+}
+
+@layer components {
+  .container-responsive {
+    @apply max-w-6xl mx-auto px-6 sm:px-8;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-lg bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 transition-colors shadow;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900 px-4 py-2;
+  }
+  .tag {
+    @apply text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200;
+  }
+}
+
+/* Premium theme additions (matches provided design while keeping Tailwind) */
+:root {
+  --primary: #0a0e27;
+  --secondary: #1e3a5f;
+  --accent: #64ffda;
+  --gold: #ffd700;
+  --text-light: #ccd6f6;
+  --text-dark: #8892b0;
+}
+
+.premium-gradient-bg {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+}
+
+.premium-blur-bg {
+  background: rgba(10, 14, 39, 0.95);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.premium-hero-title {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 1s ease forwards;
+  opacity: 0;
+}
+.animate-fade-in-up-delayed-1 { animation: fadeInUp 0.6s ease forwards; opacity: 0; animation-delay: 0.1s; }
+.animate-fade-in-up-delayed-2 { animation: fadeInUp 0.6s ease forwards; opacity: 0; animation-delay: 0.2s; }
+.animate-fade-in-up-delayed-3 { animation: fadeInUp 0.6s ease forwards; opacity: 0; animation-delay: 0.3s; }
+.animate-fade-in-up-delayed-4 { animation: fadeInUp 0.6s ease forwards; opacity: 0; animation-delay: 0.4s; }
+.animate-fade-in-up-delayed-5 { animation: fadeInUp 0.6s ease forwards; opacity: 0; animation-delay: 0.5s; }
+.animate-fade-in-up-delayed-6 { animation: fadeInUp 0.6s ease forwards; opacity: 0; animation-delay: 0.6s; }
+
+.section-title {
+  position: relative;
+  color: var(--accent);
+}
+.section-title:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -10px;
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.slide-in,
+.slide-in-right {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: all 0.8s ease;
+}
+.slide-in-right {
+  transform: translateX(50px);
+}
+.slide-in.active,
+.slide-in-right.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.premium-card {
+  background: rgba(30, 58, 95, 0.2);
+  border: 1px solid rgba(100, 255, 218, 0.1);
+}
+.premium-card:hover {
+  box-shadow: 0 20px 40px rgba(100, 255, 218, 0.25);
+}
+
+.upload-box {
+  border: 2px dashed rgba(100, 255, 218, 0.3);
+  transition: all 0.3s ease;
+}
+.upload-box:hover {
+  border-color: var(--accent);
+  background: rgba(100, 255, 218, 0.05);
+}
