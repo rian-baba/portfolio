@@ -27,11 +27,24 @@ export type ProjectDoc = {
   imageUrl?: string
 }
 
+export type InternshipDoc = {
+  id?: string
+  company: string
+  role: string
+  location?: string
+  startDate: string
+  endDate?: string
+  description: string
+  tags?: string[]
+  link?: string
+}
+
 const endpoint = (import.meta as any).env.VITE_APPWRITE_ENDPOINT as string
 const projectId = (import.meta as any).env.VITE_APPWRITE_PROJECT_ID as string
 const databaseId = (import.meta as any).env.VITE_APPWRITE_DATABASE_ID as string
 const collectionPortfolio = (import.meta as any).env.VITE_APPWRITE_COLLECTION_PORTFOLIO as string
 const collectionProjects = (import.meta as any).env.VITE_APPWRITE_COLLECTION_PROJECTS as string
+const collectionInternships = (import.meta as any).env.VITE_APPWRITE_COLLECTION_INTERNSHIPS as string
 const adminUserId = (import.meta as any).env.VITE_APPWRITE_ADMIN_USER_ID as string | undefined
 
 const client = new Client().setEndpoint(endpoint).setProject(projectId)
@@ -128,6 +141,35 @@ export async function updateProject(project: ProjectDoc & { id: string }): Promi
 export async function deleteProject(projectId: string): Promise<void> {
   await assertAdmin()
   await databases.deleteDocument(databaseId, collectionProjects, projectId)
+}
+
+// Internships CRUD
+export async function listInternships(): Promise<(InternshipDoc & Models.Document)[]> {
+  const list = await databases.listDocuments(databaseId, collectionInternships, [
+    Query.orderDesc('$createdAt'),
+    Query.limit(100),
+  ])
+  return list.documents as unknown as (InternshipDoc & Models.Document)[]
+}
+
+export async function createInternship(internship: InternshipDoc): Promise<Models.Document> {
+  await assertAdmin()
+  return await databases.createDocument(
+    databaseId,
+    collectionInternships,
+    internship.id || ID.unique(),
+    internship
+  )
+}
+
+export async function updateInternship(internship: InternshipDoc & { id: string }): Promise<Models.Document> {
+  await assertAdmin()
+  return await databases.updateDocument(databaseId, collectionInternships, internship.id, internship)
+}
+
+export async function deleteInternship(internshipId: string): Promise<void> {
+  await assertAdmin()
+  await databases.deleteDocument(databaseId, collectionInternships, internshipId)
 }
 
 
