@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { createInternship, deleteInternship, getAccount, getPortfolio, listInternships, listProjects, savePortfolio, signIn, signOut, updateInternship, updateProject } from './appwrite/services.ts'
-import { initialInternships, initialProjects, site, skills, type Internship, type Project } from './content'
+import { getAccount, getPortfolio, listProjects, savePortfolio, signIn, signOut, updateProject } from './appwrite/services.ts'
+import { initialProjects, site, skills, type Project } from './content'
 
 // Admin Form Component
 function AdminForm({ 
@@ -370,99 +370,30 @@ function ProjectEditForm({
   )
 }
 
-// Internship Form Component
-function InternshipForm({
-  internship,
-  isOpen,
-  onClose,
-  onSave,
-}: {
-  internship: Internship | null
-  isOpen: boolean
-  onClose: () => void
-  onSave: (data: Internship) => void
-}) {
-  const [formData, setFormData] = useState<Internship>({
-    id: '',
-    company: '',
-    role: '',
-    location: '',
-    startDate: '',
-    endDate: '',
-    description: '',
-    tags: [],
-    link: '',
+function useDarkMode() {
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    const stored = localStorage.getItem('theme')
+    if (stored) return stored === 'dark'
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
   })
 
   useEffect(() => {
-    if (internship) setFormData(internship)
-  }, [internship])
+    const root = document.documentElement
+    if (isDark) {
+      root.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      root.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [isDark])
 
-  if (!isOpen || !internship) return null
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave(formData)
-    onClose()
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-xl font-bold">Edit Internship</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Update internship information</p>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="int-company" className="block text-sm font-medium mb-1">Company</label>
-              <input id="int-company" type="text" value={formData.company} onChange={(e) => setFormData(p => ({ ...p, company: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" required />
-            </div>
-            <div>
-              <label htmlFor="int-role" className="block text-sm font-medium mb-1">Role</label>
-              <input id="int-role" type="text" value={formData.role} onChange={(e) => setFormData(p => ({ ...p, role: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" required />
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="int-location" className="block text-sm font-medium mb-1">Location</label>
-              <input id="int-location" type="text" value={formData.location || ''} onChange={(e) => setFormData(p => ({ ...p, location: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="int-start" className="block text-sm font-medium mb-1">Start</label>
-                <input id="int-start" type="text" placeholder="Jun 2025" value={formData.startDate} onChange={(e) => setFormData(p => ({ ...p, startDate: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" required />
-              </div>
-              <div>
-                <label htmlFor="int-end" className="block text-sm font-medium mb-1">End</label>
-                <input id="int-end" type="text" placeholder="Sep 2025 or Present" value={formData.endDate || ''} onChange={(e) => setFormData(p => ({ ...p, endDate: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" />
-              </div>
-            </div>
-          </div>
-          <div>
-            <label htmlFor="int-desc" className="block text-sm font-medium mb-1">Description</label>
-            <textarea id="int-desc" rows={4} placeholder="Har sentence alag point ban jayega." value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" required />
-          </div>
-          <div>
-            <label htmlFor="int-tags" className="block text-sm font-medium mb-1">Tags (comma separated)</label>
-            <input id="int-tags" type="text" value={(formData.tags || []).join(', ')} onChange={(e) => setFormData(p => ({ ...p, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" placeholder="React, TypeScript" />
-          </div>
-          <div>
-            <label htmlFor="int-link" className="block text-sm font-medium mb-1">Link</label>
-            <input id="int-link" type="url" value={formData.link || ''} onChange={(e) => setFormData(p => ({ ...p, link: e.target.value }))} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800" placeholder="https://company.com" />
-          </div>
-          <div className="flex gap-3 pt-4">
-            <button type="submit" className="btn-primary">Save Internship</button>
-            <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
+  return { isDark, setIsDark }
 }
 
 function App() {
+  const { isDark, setIsDark } = useDarkMode()
   const [admin, setAdmin] = useState(false)
   const [showSignIn, setShowSignIn] = useState(false)
   const [authEmail, setAuthEmail] = useState('')
@@ -493,14 +424,6 @@ function App() {
     const local = localStorage.getItem('projects')
     return local ? (JSON.parse(local) as Project[]) : initialProjects
   })
-
-  // Internships (Experience)
-  const [internships, setInternships] = useState<Internship[]>(() => {
-    const local = localStorage.getItem('internships')
-    return local ? (JSON.parse(local) as Internship[]) : initialInternships
-  })
-  const [showInternshipEdit, setShowInternshipEdit] = useState(false)
-  const [editingInternship, setEditingInternship] = useState<Internship | null>(null)
 
   // Services editable (localStorage only as requested)
   const [servicesData, setServicesData] = useState<{ icon: string; title: string; desc: string; id: string }[]>(() => {
@@ -559,34 +482,12 @@ function App() {
           localStorage.setItem('projects', JSON.stringify(mapped))
         }
       } catch {}
-      try {
-        const remoteInternships = await listInternships()
-        if (remoteInternships && remoteInternships.length) {
-          const mapped: Internship[] = remoteInternships.map((d: any) => ({
-            id: d.$id,
-            company: d.company,
-            role: d.role,
-            location: d.location,
-            startDate: d.startDate,
-            endDate: d.endDate,
-            description: d.description,
-            tags: d.tags || [],
-            link: d.link,
-          }))
-          setInternships(mapped)
-          localStorage.setItem('internships', JSON.stringify(mapped))
-        }
-      } catch {}
     })()
   }, [])
 
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(projects))
   }, [projects])
-
-  useEffect(() => {
-    localStorage.setItem('internships', JSON.stringify(internships))
-  }, [internships])
 
   useEffect(() => {
     (async () => {
@@ -664,25 +565,6 @@ function App() {
     updateProject(updatedProject).catch(() => {})
   }
 
-  const handleInternshipEdit = (internship: Internship) => {
-    setEditingInternship(internship)
-    setShowInternshipEdit(true)
-  }
-
-  const handleInternshipSave = (updated: Internship) => {
-    setInternships(prev => prev.map(i => i.id === updated.id ? updated : i))
-    setShowInternshipEdit(false)
-    setEditingInternship(null)
-    // persist to Appwrite
-    updateInternship(updated).catch(() => {})
-  }
-
-  const handleInternshipDelete = (internshipId: string) => {
-    setInternships(prev => prev.filter(i => i.id !== internshipId))
-    // delete from Appwrite
-    deleteInternship(internshipId).catch(() => {})
-  }
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -739,7 +621,6 @@ function App() {
             <li><a href="#home" className="hover:text-[var(--accent)]">Home</a></li>
             <li><a href="#about" className="hover:text-[var(--accent)]">About</a></li>
             <li><a href="#skills" className="hover:text-[var(--accent)]">Skills</a></li>
-            {internships.length > 0 && <li><a href="#work-experience" className="hover:text-[var(--accent)]">Experience</a></li>}
             <li><a href="#projects" className="hover:text-[var(--accent)]">Projects</a></li>
             <li><a href="#services" className="hover:text-[var(--accent)]">Services</a></li>
             <li><a href="#contact" className="hover:text-[var(--accent)]">Contact</a></li>
@@ -750,6 +631,9 @@ function App() {
             ) : (
               <button className="btn-ghost" onClick={handleSignOut}>Sign Out</button>
             )}
+            <button aria-label="Toggle theme" className="btn-ghost" onClick={() => setIsDark(!isDark)}>
+              {isDark ? 'Light' : 'Dark'}
+            </button>
           </div>
         </div>
       </nav>
@@ -769,128 +653,8 @@ function App() {
       {/* About */}
       <section id="about" className="container-responsive py-24 slide-in">
         <h2 className="section-title text-3xl font-bold text-center mb-12">About Me</h2>
-        <div className="flex flex-col md:flex-row gap-12 items-center justify-center">
-          {/* Round Profile Picture */}
-          <div className="flex-shrink-0">
-            <div className="relative group">
-              {/* Animated gradient ring */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-full blur-sm opacity-75 group-hover:opacity-100 animate-pulse" />
-              
-              {/* Profile image container */}
-              <div className="relative w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-100">
-                <img 
-                  src="/src/assets/image.jpeg"
-                  alt="Profile" 
-                  className={`w-full h-full object-contain transition-transform duration-300 ${admin ? 'cursor-move' : 'transform group-hover:scale-110 transition-transform duration-500'}`}
-                  loading="lazy"
-                  draggable={false}
-                  style={admin ? { transform: 'scale(1) translate(0px, 0px)' } : {}}
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://via.placeholder.com/400x400/6366f1/ffffff?text=Profile'
-                  }}
-                  onMouseDown={(e) => {
-                    if (!admin) return
-                    e.preventDefault()
-                    const img = e.currentTarget
-                    const startX = e.clientX
-                    const startY = e.clientY
-                    
-                    const transform = img.style.transform
-                    const translateMatch = transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/)
-                    const currentX = translateMatch ? parseFloat(translateMatch[1]) : 0
-                    const currentY = translateMatch ? parseFloat(translateMatch[2]) : 0
-                    
-                    const onMouseMove = (moveEvent: MouseEvent) => {
-                      const deltaX = moveEvent.clientX - startX
-                      const deltaY = moveEvent.clientY - startY
-                      const newX = currentX + deltaX
-                      const newY = currentY + deltaY
-                      
-                      const scaleMatch = transform.match(/scale\(([\d.]+)\)/)
-                      const scale = scaleMatch ? scaleMatch[1] : '1'
-                      
-                      img.style.transform = `scale(${scale}) translate(${newX}px, ${newY}px)`
-                    }
-                    
-                    const onMouseUp = () => {
-                      document.removeEventListener('mousemove', onMouseMove)
-                      document.removeEventListener('mouseup', onMouseUp)
-                    }
-                    
-                    document.addEventListener('mousemove', onMouseMove)
-                    document.addEventListener('mouseup', onMouseUp)
-                  }}
-                />
-              </div>
-              
-              {/* Admin: Zoom Controls */}
-              {admin && (
-                <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
-                  <button
-                    onClick={(e) => {
-                      const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
-                      if (img) {
-                        const currentScale = parseFloat(img.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || '1')
-                        img.style.transform = `scale(${Math.min(currentScale + 0.1, 2)})`
-                      }
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-lg font-bold"
-                    title="Zoom In"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
-                      if (img) {
-                        const currentScale = parseFloat(img.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || '1')
-                        img.style.transform = `scale(${Math.max(currentScale - 0.1, 0.5)})`
-                      }
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-lg font-bold"
-                    title="Zoom Out"
-                  >
-                    −
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
-                      if (img) {
-                        if (img.classList.contains('object-contain')) {
-                          img.classList.remove('object-contain')
-                          img.classList.add('object-cover')
-                        } else {
-                          img.classList.remove('object-cover')
-                          img.classList.add('object-contain')
-                        }
-                      }
-                    }}
-                    className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-xs"
-                    title="Toggle Crop/Fit"
-                  >
-                    ✂️
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
-                      if (img) img.style.transform = 'scale(1) translate(0, 0)'
-                    }}
-                    className="bg-gray-500 hover:bg-gray-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-xs"
-                    title="Reset"
-                  >
-                    ↺
-                  </button>
-                </div>
-              )}
-              
-              {/* Decorative floating elements */}
-              <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-xl opacity-60 animate-pulse" />
-              <div className="absolute -top-2 -left-2 w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full blur-xl opacity-60 animate-pulse" style={{ animationDelay: '1s' }} />
-            </div>
-          </div>
-          
-          {/* About Text */}
-          <div className="text-[var(--text-dark)] text-lg leading-relaxed max-w-2xl text-center md:text-left">
+        <div className="grid md:grid-cols-1 gap-8 items-center">
+          <div className="text-[var(--text-dark)]">
             <p>{aboutText}</p>
           </div>
         </div>
@@ -899,115 +663,13 @@ function App() {
       {/* Skills */}
       <section id="skills" className="container-responsive py-24 slide-in-right">
         <h2 className="section-title text-3xl font-bold text-center">Skills</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 mt-12">
           {portfolioSkills.map((skill, idx) => (
             <div key={skill} className={`premium-card rounded-xl text-center p-6 ${idx < 6 ? `animate-fade-in-up-delayed-${idx+1}` : 'animate-fade-in-up'}`}>
               <h3 className="text-[var(--text-light)] font-semibold">{skill}</h3>
               </div>
             ))}
         </div>
-      </section>
-
-      {/* Work Experience Section */}
-      <section id="work-experience" className="container-responsive py-24 slide-in">
-        {/* Show section if: admin mode OR has internships */}
-        {(admin || internships.length > 0) ? (
-          <>
-            <div className="flex flex-col gap-4">
-              <h2 className="section-title text-3xl font-bold text-center">Work Experience</h2>
-              
-              {admin && (
-                <>
-                  <div className="text-center text-sm text-green-500 mb-2">
-                    🔧 Admin Mode Active (admin={String(admin)}, internships={internships.length})
-                  </div>
-                  <div className="flex flex-wrap gap-3 justify-center items-center bg-blue-500/10 p-4 rounded-lg border-2 border-blue-500">
-                    <button className="btn-ghost" onClick={() => setShowAdminForm(true)}>Edit Info</button>
-                    <button
-                      className="btn-primary text-lg px-6 py-3 font-bold"
-                      onClick={async () => {
-                        console.log('Add Work Experience clicked!')
-                        const newItem: Internship = {
-                          id: `int-${Date.now()}`,
-                          company: 'Company',
-                          role: 'Intern',
-                          location: 'Remote',
-                          startDate: 'Month Year',
-                          endDate: 'Present',
-                          description: 'Yahan details likhein.',
-                          tags: [],
-                          link: '',
-                        }
-                        setInternships(prev => [newItem, ...prev])
-                        setEditingInternship(newItem)
-                        setShowInternshipEdit(true)
-                        // Create in Appwrite
-                        try {
-                          await createInternship(newItem)
-                        } catch (err) {
-                          console.error('Failed to create internship in Appwrite:', err)
-                        }
-                      }}
-                    >
-                      ➕ Add Work Experience
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            {internships.length > 0 ? (
-              <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {internships.map((item, index) => (
-                  <article key={item.id} className={`premium-card rounded-2xl overflow-hidden ${index < 6 ? `animate-fade-in-up-delayed-${index+1}` : 'animate-fade-in-up'}`}>
-                    <div className="p-6">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-semibold text-[var(--accent)]">{item.role} · {item.company}</h3>
-                        <span className="text-sm text-[var(--text-dark)]">{item.startDate} — {item.endDate || 'Present'}</span>
-                      </div>
-                      <div className="mt-1 text-sm text-[var(--text-dark)]">{item.location}</div>
-                      <div className="mt-3 text-[var(--text-dark)] text-sm">
-                        {item.description.split('.').filter(Boolean).map((sentence, i) => (
-                          <div key={i} className="flex items-start gap-2 mb-1">
-                            <div className="w-1.5 h-1.5 bg-[var(--accent)] rounded-full mt-2" />
-                            <span>{sentence.trim()}</span>
-                          </div>
-                        ))}
-                      </div>
-                      {!!(item.tags && item.tags.length) && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {item.tags!.map((t) => (<span key={t} className="tag">{t}</span>))}
-                        </div>
-                      )}
-                      <div className="mt-5 flex gap-3">
-                        {item.link && (<a className="btn-ghost text-sm" href={item.link} target="_blank" rel="noreferrer">Link</a>)}
-                        {admin && (
-                          <>
-                            <button onClick={() => handleInternshipEdit(item)} className="btn-ghost text-sm">Edit</button>
-                            <button onClick={() => { if (window.confirm(`Delete experience "${item.company}"?`)) handleInternshipDelete(item.id) }} className="btn-ghost text-sm">Delete</button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              admin && (
-                <div className="mt-12 text-center text-[var(--text-dark)]">
-                  <p>No work experience added yet. Click "Add Work Experience" to get started.</p>
-                </div>
-              )
-            )}
-            
-            {admin && internships.length > 0 && (
-              <div className="mt-8 flex gap-3 justify-center">
-                <button className="btn-ghost" onClick={() => { const json = JSON.stringify(internships, null, 2); navigator.clipboard.writeText(json); alert('Work Experience JSON copied.'); }}>Copy Experience JSON</button>
-                <button className="btn-ghost text-red-600 hover:text-red-700" onClick={() => { if (window.confirm(`Delete all ${internships.length} experiences?`)) setInternships([]) }}>Delete All Experiences</button>
-              </div>
-            )}
-          </>
-        ) : null}
       </section>
 
       {/* Projects */}
@@ -1101,160 +763,24 @@ function App() {
       {/* Documents section removed per request */}
 
       {/* Contact */}
-      <section id="contact" className="container-responsive py-24 slide-in-right relative overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 -z-10 opacity-30">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        </div>
-
-        <div className="max-w-5xl mx-auto">
-          {/* Header with Gradient */}
-          <div className="text-center mb-16">
-            <div className="inline-block mb-4">
-              <span className="text-6xl animate-bounce inline-block">👋</span>
-            </div>
-            <h2 className="section-title text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-              Let's Work Together
-            </h2>
-            <p className="text-[var(--text-dark)] text-lg max-w-2xl mx-auto">
-              Got an exciting project or opportunity? I'm always open to discussing new ideas and collaborations.
-            </p>
-          </div>
-          
-          {/* Contact Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {/* Email Card - Gradient Border */}
-            <a 
-              href={`mailto:${portfolioData.contactEmail}`}
-              className="relative group"
-            >
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
-              <div className="relative premium-card rounded-2xl p-8 text-center h-full flex flex-col justify-between">
-                <div>
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl transform group-hover:rotate-12 transition-transform duration-300">
-                    ✉️
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">Email</h3>
-                  <p className="text-xs text-[var(--text-dark)] break-all mb-2">{portfolioData.contactEmail}</p>
-                </div>
-                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] group-hover:gap-3 transition-all">
-                  <span>Send Message</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </div>
-              </div>
-            </a>
-
-            {/* LinkedIn Card - Gradient Border */}
-            <a 
-              href={portfolioData.linkedinUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="relative group"
-            >
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
-              <div className="relative premium-card rounded-2xl p-8 text-center h-full flex flex-col justify-between">
-                <div>
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center text-3xl transform group-hover:rotate-12 transition-transform duration-300">
-                    💼
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">LinkedIn</h3>
-                  <p className="text-xs text-[var(--text-dark)] mb-2">Let's connect professionally</p>
-                </div>
-                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] group-hover:gap-3 transition-all">
-                  <span>View Profile</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </div>
-              </div>
-            </a>
-
-            {/* Phone/Social Card - Gradient Border */}
-            {(portfolioData as any).contactPhone ? (
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
-                <div className="relative premium-card rounded-2xl p-8 text-center h-full flex flex-col justify-between overflow-hidden">
-                  <div>
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center text-3xl transform group-hover:rotate-12 transition-transform duration-300">
-                      📱
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">Phone</h3>
-                    {!showPhone && <p className="text-xs text-[var(--text-dark)] mb-2">Tap to reveal number</p>}
-                  </div>
-                  
-                  {/* Phone Number - Slides in from right */}
-                  {showPhone && (
-                    <div className="animate-fade-in-up">
-                      <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg p-4 mb-3 border border-green-500/20">
-                        <a 
-                          href={`tel:${(portfolioData as any).contactPhone}`}
-                          className="text-lg font-bold text-[var(--accent)] hover:text-green-400 transition-colors font-mono block"
-                        >
-                          {(portfolioData as any).contactPhone}
-                        </a>
-                      </div>
-                      <button 
-                        onClick={() => setShowPhone(false)}
-                        className="text-xs text-[var(--text-dark)] hover:text-red-400 underline transition-colors"
-                      >
-                        ✕ Hide Number
-                      </button>
-                    </div>
-                  )}
-                  
-                  {!showPhone && (
-                    <button 
-                      onClick={() => setShowPhone(true)}
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] hover:gap-3 transition-all"
-                    >
-                      <span>Show Number</span>
-                      <span className="transition-transform">→</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
-                <div className="relative premium-card rounded-2xl p-8 text-center h-full flex flex-col justify-between">
-                  <div>
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center text-3xl transform group-hover:rotate-12 transition-transform duration-300">
-                      🌐
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">Social</h3>
-                    <p className="text-xs text-[var(--text-dark)] mb-2">Follow my journey</p>
-                  </div>
-                  <div className="mt-4 text-sm font-semibold text-[var(--text-dark)]">Coming Soon</div>
-                </div>
-              </div>
+      <section id="contact" className="container-responsive py-24 slide-in-right">
+        <h2 className="section-title text-3xl font-bold text-center">Get In Touch</h2>
+        <div className="rounded-2xl border border-slate-200/20 p-8 mt-10 bg-white/5">
+          <div className="flex flex-wrap gap-3 justify-center">
+            <a className="btn-primary" href={`mailto:${portfolioData.contactEmail}`}>Email Me</a>
+            <a className="btn-ghost" href={portfolioData.linkedinUrl} target="_blank" rel="noreferrer">LinkedIn</a>
+            {(portfolioData as any).contactPhone && (
+              <button className="btn-ghost" onClick={() => setShowPhone((v) => !v)}>{showPhone ? 'Hide Phone' : 'Show Phone'}</button>
             )}
           </div>
-
-          {/* Quick Facts with Icons */}
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              { icon: '📍', text: portfolioData.quickFacts[0] },
-              { icon: '⚡', text: portfolioData.quickFacts[1] },
-              { icon: '🎯', text: portfolioData.quickFacts[2] }
-            ].map((item, idx) => (
-              <div 
-                key={idx} 
-                className="premium-card p-5 rounded-xl text-center group hover:scale-105 transition-transform"
-              >
-                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{item.icon}</div>
-                <p className="text-sm font-medium text-[var(--text-dark)]">{item.text}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Response Time Badge */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
-              <span className="text-2xl animate-pulse">⚡</span>
-              <span className="text-sm font-medium text-[var(--text-dark)]">
-                Usually responds within 24 hours
-              </span>
+          {showPhone && (portfolioData as any).contactPhone && (
+            <div className="mt-6 p-4 rounded-lg border border-slate-200/20 inline-flex items-center gap-3">
+              <span className="font-semibold">Phone:</span>
+              <a className="text-[var(--accent)]" href={`tel:${(portfolioData as any).contactPhone}`}>
+                {(portfolioData as any).contactPhone}
+              </a>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -1289,12 +815,6 @@ function App() {
         isOpen={showProjectEdit}
         onClose={() => { setShowProjectEdit(false); setEditingProject(null) }}
         onSave={handleProjectSave}
-      />
-      <InternshipForm
-        internship={editingInternship}
-        isOpen={showInternshipEdit}
-        onClose={() => { setShowInternshipEdit(false); setEditingInternship(null) }}
-        onSave={handleInternshipSave}
       />
 
       {/* Admin Sign-in Modal */}

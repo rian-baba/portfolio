@@ -8,18 +8,6 @@ export type Project = {
   imageUrl?: string
 }
 
-export type Internship = {
-  id: string
-  company: string
-  role: string
-  location?: string
-  startDate: string
-  endDate?: string
-  description: string
-  tags?: string[]
-  link?: string
-}
-
 export const site = {
   title: 'Aapka Naam — Portfolio', // Apna naam yahan likhein
   role: 'Full‑Stack Developer', // Apna role/title
@@ -30,6 +18,7 @@ export const site = {
   linkedinUrl: 'https://www.linkedin.com/in/aapka-profile', // Apna LinkedIn
   quickFacts: ['Location: Apka City', 'Availability: Open to offers', 'Focus: Full‑stack / React / Node'], // Apni details
 }
+
 export const skills: string[] = [
   'React',
   'TypeScript', 
@@ -37,6 +26,7 @@ export const skills: string[] = [
   'Express',
   'Next.js',
   'PostgreSQL',
+  'MongoDB',
   'Prisma',
   'TailwindCSS',
   'Docker',
@@ -63,21 +53,6 @@ export const initialProjects: Project[] = [
     liveUrl: 'https://project2.com', // Live website link
   },
   // Aur projects add kar sakte hain yahan
-]
-
-export const initialInternships: Internship[] = [
-  // Example:
-  // {
-  //   id: 'int-1',
-  //   company: 'Company Name',
-  //   role: 'Frontend Intern',
-  //   location: 'Remote',
-  //   startDate: 'Jun 2024',
-  //   endDate: 'Sep 2024',
-  //   description: 'React components build kiye, UI bugs fix kiye, performance optimize ki.',
-  //   tags: ['React', 'TypeScript', 'TailwindCSS'],
-  //   link: 'https://example.com',
-  // },
 ]
 
 export const admin = {
