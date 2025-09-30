@@ -29,5 +29,4 @@ build/
 .env
 .vscode/
 *.log
-    testSprite_tests
 

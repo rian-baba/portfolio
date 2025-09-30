@@ -518,6 +518,16 @@ function App() {
   const [showServiceEditor, setShowServiceEditor] = useState(false)
   const [editingService, setEditingService] = useState<{ icon: string; title: string; desc: string; id: string } | null>(null)
 
+  // Profile picture position state
+  const [profileTransform, setProfileTransform] = useState(() => {
+    const saved = localStorage.getItem('profileTransform')
+    return saved || 'scale(1) translate(0px, 0px)'
+  })
+  const [profileObjectFit, setProfileObjectFit] = useState<'contain' | 'cover'>(() => {
+    const saved = localStorage.getItem('profileObjectFit')
+    return (saved as 'contain' | 'cover') || 'contain'
+  })
+
   // hydrate from Appwrite on mount
   useEffect(() => {
     (async () => {
@@ -599,6 +609,19 @@ function App() {
   useEffect(() => {
     localStorage.setItem('services', JSON.stringify(servicesData))
   }, [servicesData])
+
+  // Load profile picture position on mount and when admin changes
+  useEffect(() => {
+    const savedTransform = localStorage.getItem('profileTransform')
+    const savedObjectFit = localStorage.getItem('profileObjectFit')
+    
+    if (savedTransform) {
+      setProfileTransform(savedTransform)
+    }
+    if (savedObjectFit) {
+      setProfileObjectFit(savedObjectFit as 'contain' | 'cover')
+    }
+  }, [admin])
 
   // accent gradient not used after premium redesign
 
@@ -781,10 +804,10 @@ function App() {
                 <img 
                   src="/src/assets/image.jpeg"
                   alt="Profile" 
-                  className={`w-full h-full object-contain transition-transform duration-300 ${admin ? 'cursor-move' : 'transform group-hover:scale-110 transition-transform duration-500'}`}
+                  className={`w-full h-full object-${profileObjectFit} transition-transform duration-300 ${admin ? 'cursor-move' : ''}`}
                   loading="lazy"
                   draggable={false}
-                  style={admin ? { transform: 'scale(1) translate(0px, 0px)' } : {}}
+                  style={{ transform: profileTransform }}
                   onError={(e) => {
                     e.currentTarget.src = 'https://via.placeholder.com/400x400/6366f1/ffffff?text=Profile'
                   }}
@@ -815,6 +838,8 @@ function App() {
                     const onMouseUp = () => {
                       document.removeEventListener('mousemove', onMouseMove)
                       document.removeEventListener('mouseup', onMouseUp)
+                      // Update state with current transform
+                      setProfileTransform(img.style.transform)
                     }
                     
                     document.addEventListener('mousemove', onMouseMove)
@@ -831,7 +856,12 @@ function App() {
                       const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
                       if (img) {
                         const currentScale = parseFloat(img.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || '1')
-                        img.style.transform = `scale(${Math.min(currentScale + 0.1, 2)})`
+                        const translateMatch = img.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/)
+                        const translateX = translateMatch ? translateMatch[1] : '0'
+                        const translateY = translateMatch ? translateMatch[2] : '0'
+                        const newTransform = `scale(${Math.min(currentScale + 0.1, 2)}) translate(${translateX}px, ${translateY}px)`
+                        img.style.transform = newTransform
+                        setProfileTransform(newTransform)
                       }
                     }}
                     className="bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-lg font-bold"
@@ -844,7 +874,12 @@ function App() {
                       const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
                       if (img) {
                         const currentScale = parseFloat(img.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || '1')
-                        img.style.transform = `scale(${Math.max(currentScale - 0.1, 0.5)})`
+                        const translateMatch = img.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/)
+                        const translateX = translateMatch ? translateMatch[1] : '0'
+                        const translateY = translateMatch ? translateMatch[2] : '0'
+                        const newTransform = `scale(${Math.max(currentScale - 0.1, 0.5)}) translate(${translateX}px, ${translateY}px)`
+                        img.style.transform = newTransform
+                        setProfileTransform(newTransform)
                       }
                     }}
                     className="bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-lg font-bold"
@@ -856,13 +891,8 @@ function App() {
                     onClick={(e) => {
                       const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
                       if (img) {
-                        if (img.classList.contains('object-contain')) {
-                          img.classList.remove('object-contain')
-                          img.classList.add('object-cover')
-                        } else {
-                          img.classList.remove('object-cover')
-                          img.classList.add('object-contain')
-                        }
+                        const newFit = profileObjectFit === 'contain' ? 'cover' : 'contain'
+                        setProfileObjectFit(newFit)
                       }
                     }}
                     className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-xs"
@@ -873,12 +903,28 @@ function App() {
                   <button
                     onClick={(e) => {
                       const img = e.currentTarget.parentElement?.parentElement?.querySelector('img')
-                      if (img) img.style.transform = 'scale(1) translate(0, 0)'
+                      if (img) {
+                        const resetTransform = 'scale(1) translate(0px, 0px)'
+                        img.style.transform = resetTransform
+                        setProfileTransform(resetTransform)
+                        setProfileObjectFit('contain')
+                      }
                     }}
                     className="bg-gray-500 hover:bg-gray-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-xs"
                     title="Reset"
                   >
                     ↺
+                  </button>
+                  <button
+                    onClick={() => {
+                      localStorage.setItem('profileTransform', profileTransform)
+                      localStorage.setItem('profileObjectFit', profileObjectFit)
+                      alert('✅ Picture position saved!')
+                    }}
+                    className="bg-green-500 hover:bg-green-600 text-white w-8 h-8 rounded-full shadow-lg transition-all flex items-center justify-center text-xs font-bold"
+                    title="Save Position"
+                  >
+                    💾
                   </button>
                 </div>
               )}
